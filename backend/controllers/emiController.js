@@ -30,7 +30,10 @@ exports.getEmis = async (req, res) => {
 exports.deleteEmi = async (req, res) => {
   const { id } = req.params;
   try {
-    await Emi.findByIdAndDelete(id);
+    const emi = await Emi.findOneAndDelete({ _id: id, userId: req.userId });
+    if (!emi) {
+      return res.status(404).json({ success: false, message: 'EMI not found' });
+    }
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error deleting EMI' });

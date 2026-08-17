@@ -21,12 +21,13 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
-
-
 exports.deleteTransaction = async (req, res) => {
   const { id } = req.params;
   try {
-    await Transaction.findByIdAndDelete(id);
+    const transaction = await Transaction.findOneAndDelete({ _id: id, userId: req.userId });
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
     res.json({ success: true });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error deleting transaction' });
