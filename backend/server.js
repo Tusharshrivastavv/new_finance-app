@@ -19,6 +19,11 @@ for (const key of requiredEnvVars) {
 
 const app = express();
 
+// Render (and most PaaS hosts) sit behind a reverse proxy, which sets
+// X-Forwarded-For. Trust it so express-rate-limit can correctly identify
+// clients instead of throwing on every request.
+app.set('trust proxy', 1);
+
 // In production, only allow requests from your actual frontend domain(s).
 // Set FRONTEND_URL to a comma-separated list, e.g. "https://yourapp.com,https://www.yourapp.com"
 const allowedOrigins = process.env.FRONTEND_URL
