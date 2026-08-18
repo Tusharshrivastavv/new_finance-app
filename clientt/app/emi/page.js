@@ -51,20 +51,23 @@ const EMI = () => {
       return;
     }
 
-    try {
-      const response = await fetch("http://localhost:5000/api/emi", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount,
-          emiDate,
-          monthlyPayment,
-          emiName,
-        }),
-      });
+  try {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/emi`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        amount,
+        emiDate,
+        monthlyPayment,
+        emiName,
+      }),
+    }
+  );
 
       if (!response.ok) {
         const errorData = await response.json();
