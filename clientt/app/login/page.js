@@ -20,7 +20,7 @@ export default function Login() {
 
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
-        router.push('/index');
+        router.push('/dashboard');
       } else {
         setErrorMessage(response.data.message);
       }
@@ -63,7 +63,7 @@ export default function Login() {
             <button 
               onClick={goToSignup} 
               className="w-full mt-4 bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition duration-300">
-              Don't have an account? Sign Up
+             Don&apos;t have an account? Sign Up
             </button>
           </form>
         </div>

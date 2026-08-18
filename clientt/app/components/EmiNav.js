@@ -11,7 +11,7 @@ export default function EmiNav() {
         </Link>
 
         <div className="flex items-center space-x-6">
-          <Link href="/index">
+          <Link href="/dashboard">
             <span className="text-white text-lg font-medium hover:text-gray-400 transition duration-300 cursor-pointer">
               Back
             </span>

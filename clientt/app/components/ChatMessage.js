@@ -1,3 +1,4 @@
+"use client"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 export default function TransactionChart({ transactions }) {
