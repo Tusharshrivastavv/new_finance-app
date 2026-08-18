@@ -90,7 +90,7 @@ export default function Login() {
       <div className="flex-1 bg-gray-800 hidden lg:block rounded-r-lg overflow-hidden">
         <div className="relative w-full h-full min-h-[600px]">
           <Image
-            src="/background.WEBP"
+            src="/background.webp"
             alt="Finance Image"
             fill
             className="w-full h-full object-cover rounded-r-lg opacity-80"
