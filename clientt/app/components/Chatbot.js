@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { useState } from "react";
 
 export default function Chatbot() {
@@ -9,106 +10,134 @@ export default function Chatbot() {
   async function sendMessage() {
     if (!input.trim()) return;
 
-    const userMessage = { text: input, sender: "user" };
+    const userMessage = {
+      text: input,
+      sender: "user",
+    };
+
     setMessages((prev) => [...prev, userMessage]);
 
     try {
       const response = await fetch("/api/chatbot", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
 
       const data = await response.json();
+
       if (data.reply) {
-        setMessages((prev) => [...prev, { text: data.reply, sender: "bot" }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: data.reply,
+            sender: "bot",
+          },
+        ]);
       }
     } catch (error) {
       console.error("Chatbot Error:", error);
-      setMessages((prev) => [...prev, { text: "Error: Unable to get a response.", sender: "bot" }]);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "Error: Unable to get a response.",
+          sender: "bot",
+        },
+      ]);
     }
 
     setInput("");
   }
 
   return (
-    <div style={{ position: "fixed", bottom: "20px", right: "20px", zIndex: 1000 }}>
+    <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[1000]">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          backgroundColor: "#007bff",
-          color: "white",
-          padding: "10px 15px",
-          borderRadius: "50%",
-          fontSize: "16px",
-          border: "none",
-          cursor: "pointer",
-        }}
+        className="bg-blue-600 hover:bg-blue-700 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full text-lg sm:text-xl border-none cursor-pointer shadow-lg transition"
       >
         💬
       </button>
 
       {isOpen && (
         <div
-          style={{
-            width: "300px",
-            height: "400px",
-            backgroundColor: "white",
-            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-            borderRadius: "10px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            position: "absolute",
-            bottom: "60px",
-            right: "0",
-            padding: "10px",
-          }}
+          className="
+            absolute
+            bottom-16
+            right-0
+            w-[calc(100vw-32px)]
+            max-w-[350px]
+            h-[70vh]
+            max-h-[450px]
+            min-h-[350px]
+            bg-white
+            shadow-xl
+            rounded-xl
+            flex
+            flex-col
+            overflow-hidden
+            p-2
+          "
         >
-          <div style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
+          <div className="flex-1 overflow-y-auto p-2 sm:p-3">
             {messages.map((msg, index) => (
-              <p
+              <div
                 key={index}
-                style={{
-                  backgroundColor: msg.sender === "user" ? "#007bff" : "#f1f1f1",
-                  color: msg.sender === "user" ? "white" : "black",
-                  padding: "8px 12px",
-                  borderRadius: "10px",
-                  maxWidth: "80%",
-                  alignSelf: msg.sender === "user" ? "flex-end" : "flex-start",
-                  marginBottom: "5px",
-                }}
+                className={`flex mb-2 ${
+                  msg.sender === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
               >
-                {msg.text}
-              </p>
+                <p
+                  className={`px-3 py-2 rounded-xl max-w-[80%] break-words text-sm ${
+                    msg.sender === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-black"
+                  }`}
+                >
+                  {msg.text}
+                </p>
+              </div>
             ))}
           </div>
 
-          <div style={{ display: "flex", borderTop: "1px solid #ddd", padding: "5px" }}>
+          <div className="flex border-t border-gray-300 p-1 bg-white">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "10px",
-                border: "none",
-                outline: "none",
-                fontSize: "14px",
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
               }}
+              className="
+                flex-1
+                min-w-0
+                p-2
+                sm:p-3
+                bg-white
+                text-black
+                caret-black
+                placeholder-gray-500
+                border-none
+                outline-none
+                text-sm
+              "
               placeholder="Type a message..."
             />
+
             <button
               onClick={sendMessage}
-              style={{
-                backgroundColor: "#007bff",
-                color: "white",
-                padding: "10px 15px",
-                border: "none",
-                cursor: "pointer",
-                borderRadius: "5px",
-              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg cursor-pointer transition"
             >
               ➤
             </button>
