@@ -6,6 +6,9 @@ import TransactionList from "../components/TransactionList";
 import TransactionChart from "../components/TransactionChart";
 import { getTransactions } from "../utils/api";
 import Chatbot from "../components/Chatbot";
+
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const [transactions, setTransactions] = useState([]);
   const [token, setToken] = useState("");
