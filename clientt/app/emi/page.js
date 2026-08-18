@@ -17,32 +17,58 @@ const EMI = () => {
       ? localStorage.getItem("token")
       : null;
 
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
   const fetchEMIs = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/emi", {
+      if (!backendUrl) {
+        throw new Error("Backend URL is not configured.");
+      }
+
+      if (!token) {
+        throw new Error("User not authenticated.");
+      }
+
+      const response = await fetch(`${backendUrl}/api/emi`, {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            `Failed to fetch EMIs (${response.status})`
+        );
+      }
+
       const data = await response.json();
 
       if (data.success) {
-        setEmis(data.emis);
+        setEmis(data.emis || []);
+        setError("");
       } else {
-        setError("Could not fetch EMI data.");
+        setError(data.message || "Could not fetch EMI data.");
       }
     } catch (err) {
-      setError("Failed to load EMIs.");
+      console.error("Fetch EMI Error:", err);
+      setError(err.message || "Failed to load EMIs.");
     }
   };
 
   useEffect(() => {
-    if (token) fetchEMIs();
-  }, []);
+    if (token) {
+      fetchEMIs();
+    }
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
     setSuccess("");
 
@@ -51,38 +77,53 @@ const EMI = () => {
       return;
     }
 
-  try {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/emi`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        amount,
-        emiDate,
-        monthlyPayment,
-        emiName,
-      }),
+    if (!backendUrl) {
+      setError("Backend URL is not configured.");
+      return;
     }
-  );
+
+    try {
+      const response = await fetch(`${backendUrl}/api/emi`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount,
+          emiDate,
+          monthlyPayment,
+          emiName,
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Something went wrong");
+        const errorData = await response.json().catch(() => ({}));
+
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            `Something went wrong (${response.status})`
+        );
+      }
+
+      const data = await response.json();
+
+      if (data.success === false) {
+        throw new Error(data.message || "Failed to add EMI.");
       }
 
       setSuccess("EMI added successfully!");
+
       setAmount("");
       setEmiDate("");
       setMonthlyPayment("");
       setEmiName("");
 
-      fetchEMIs();
+      await fetchEMIs();
     } catch (error) {
-      setError(error.message);
+      console.error("Add EMI Error:", error);
+      setError(error.message || "Failed to add EMI.");
     }
   };
 
@@ -92,13 +133,14 @@ const EMI = () => {
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 mt-2 sm:mt-6">
-          
+
           <div className="lg:w-2/5 w-full border border-gray-700 p-4 sm:p-6 rounded-lg shadow-md bg-gray-800">
             <h2 className="text-xl sm:text-2xl font-bold mb-4">
               Add EMI
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+
               <div>
                 <label className="block font-medium mb-1 text-sm sm:text-base">
                   EMI Name
@@ -178,6 +220,7 @@ const EMI = () => {
 
           {emis.length > 0 && (
             <div className="lg:w-3/5 w-full border border-gray-700 p-4 sm:p-6 rounded-lg shadow-md bg-gray-800">
+
               <h2 className="text-xl sm:text-2xl font-bold mb-4">
                 Your EMIs
               </h2>
@@ -189,6 +232,7 @@ const EMI = () => {
                     className="bg-gray-700 p-4 sm:p-5 rounded-lg border border-gray-600 overflow-hidden"
                   >
                     <div className="space-y-2 text-sm sm:text-base">
+
                       <p className="break-words">
                         <span className="font-semibold">
                           EMI Name:
@@ -225,12 +269,14 @@ const EMI = () => {
                           emi.emiDate
                         ).toLocaleDateString()}
                       </p>
+
                     </div>
                   </li>
                 ))}
               </ul>
             </div>
           )}
+
         </div>
       </div>
     </div>
