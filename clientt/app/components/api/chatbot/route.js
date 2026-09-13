@@ -1,4 +1,4 @@
-import { chatbotQA, SUGGESTED_QUESTION_IDS, FALLBACK_ANSWER } from "../../data/chatbotData";
+import { chatbotQA, SUGGESTED_QUESTION_IDS, FALLBACK_ANSWER } from "../../../data/chatbotData";
 
 function findBestMatch(message) {
   const text = message.toLowerCase();
