@@ -1,36 +1,70 @@
-export async function POST(req) {
-    try {
-      const { message } = await req.json();
-  
-      if (!message) {
-        return new Response(JSON.stringify({ error: "Message is required" }), { status: 400 });
+import { chatbotQA, SUGGESTED_QUESTION_IDS, FALLBACK_ANSWER } from "../../data/chatbotData";
+
+function findBestMatch(message) {
+  const text = message.toLowerCase();
+  let best = null;
+  let bestScore = 0;
+
+  for (const entry of chatbotQA) {
+    let score = 0;
+    for (const keyword of entry.keywords) {
+      if (text.includes(keyword.toLowerCase())) {
+        score += 1;
       }
-  
-      const apiKey = process.env.OPENAI_API_KEY;
-      const apiUrl = "https://api.openai.com/v1/chat/completions";
-  
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: message }],
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.error?.message || "API Error");
-      }
-  
-      return new Response(JSON.stringify({ reply: data.choices[0].message.content }), { status: 200 });
-    } catch (error) {
-      console.error("Chatbot API Error:", error);
-      return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = entry;
     }
   }
-  
+
+  return bestScore > 0 ? best : null;
+}
+
+export async function POST(req) {
+  try {
+    const { message, questionId } = await req.json();
+
+    if (!message && !questionId) {
+      return new Response(JSON.stringify({ error: "Message is required" }), {
+        status: 400,
+      });
+    }
+
+    if (questionId) {
+      const entry = chatbotQA.find((q) => q.id === questionId);
+      if (entry) {
+        return new Response(JSON.stringify({ reply: entry.answer }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const match = findBestMatch(message);
+
+    if (match) {
+      return new Response(JSON.stringify({ reply: match.answer }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const suggestions = SUGGESTED_QUESTION_IDS.map((id) =>
+      chatbotQA.find((q) => q.id === id)
+    ).filter(Boolean);
+
+    return new Response(
+      JSON.stringify({
+        reply: FALLBACK_ANSWER,
+        suggestions: suggestions.map((s) => ({ id: s.id, question: s.question })),
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Chatbot API Error:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+    });
+  }
+}
